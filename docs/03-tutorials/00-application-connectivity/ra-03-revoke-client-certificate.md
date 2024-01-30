@@ -13,8 +13,8 @@ After you have established a secure connection with Compass and generated a clie
 - Runtime connected to Compass
 - [Established secure connection with Compass](ra-01-establish-secure-connection-with-compass.md)
 
-> [!NOTE]
-> See how to [maintain a secure connection with Compass and renew a client certificate](ra-02-maintain-secure-connection-with-compass.md).
+    > [!NOTE]
+    > See how to [maintain a secure connection with Compass and renew a client certificate](ra-02-maintain-secure-connection-with-compass.md).
 
 ## Revoke the Certificate
 

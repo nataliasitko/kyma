@@ -58,7 +58,9 @@ jobs:
           BRANCH="$DEFAULT_BRANCH"
           
           echo "📄 Raw input: $INPUT_RAW"
-          echo "🔍 Repository: $REPO"
+          echo "� Raw input (quoted): '$INPUT_RAW'"
+          echo "📄 Input length: ${#INPUT_RAW}"
+          echo "�🔍 Repository: $REPO"
           echo "🔍 Default branch: $DEFAULT_BRANCH"
           
           # 1. Search in the env variables: build the variable name as repo name --> to capital --> replace " " and "-" with "_" --> append "_BRANCH"
@@ -125,9 +127,15 @@ jobs:
           
           echo "🔍 Repository: $REPO"
           echo "🔍 Input forks: $INPUT_FORKS"
+          echo "🔍 Raw input forks (quoted): '$INPUT_FORKS'"
+          echo "🔍 Input length: ${#INPUT_FORKS}"
           
           if [ -n "$INPUT_FORKS" ] && [ "$INPUT_FORKS" != "{}" ]; then
             echo "📊 Parsing fork input..."
+            echo "🔍 Testing jq validity..."
+            echo "$INPUT_FORKS" | jq . || echo "❌ Invalid JSON"
+            echo "🔍 Testing has() function..."
+            echo "$INPUT_FORKS" | jq -e "has(\"$REPO\")" && echo "✅ Found $REPO key" || echo "❌ Key $REPO not found"
             if echo "$INPUT_FORKS" | jq -e "has(\"$REPO\")" >/dev/null 2>&1; then
               ORG=$(echo "$INPUT_FORKS" | jq -r ".[\"$REPO\"]")
               echo "✅ Using fork: $ORG/$REPO"

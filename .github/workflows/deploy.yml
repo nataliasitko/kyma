@@ -58,8 +58,6 @@ jobs:
           BRANCH="$DEFAULT_BRANCH"
           
           echo "📄 Raw input: $INPUT_RAW"
-          echo "� Raw input (quoted): '$INPUT_RAW'"
-          echo "📄 Input length: ${#INPUT_RAW}"
           echo "�🔍 Repository: $REPO"
           echo "🔍 Default branch: $DEFAULT_BRANCH"
           
@@ -128,8 +126,6 @@ jobs:
           ORG="$DEFAULT_ORG"
           
           echo "� Raw input: $INPUT_RAW"
-          echo "📄 Raw input (quoted): '$INPUT_RAW'"
-          echo "📄 Input length: ${#INPUT_RAW}"
           echo "�🔍 Repository: $REPO"
           echo "🔍 Default organization: $DEFAULT_ORG"
           

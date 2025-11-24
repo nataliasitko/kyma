@@ -1,7 +1,7 @@
 #!/bin/bash
-ORG=${FORK:-kyma-project}
+ORG=${ORG:-kyma-project}
 DEFAULT_BRANCH=${BRANCH:-main}
-TARGET_DIR=../docs/external-content
+TARGET_DIR=${TARGET_DIR:-../docs/external-content}
 mkdir -p "$ORG"
 mkdir -p "$TARGET_DIR"
 cd "$ORG" || exit
@@ -31,8 +31,12 @@ for repo in "${REPOS[@]}"; do
   branch_var="${repo_upper}_BRANCH"
   branch=${!branch_var:-$DEFAULT_BRANCH}
   
-  echo "📥 Cloning https://github.com/$ORG/$repo.git (branch: $branch)"
-  git clone -b "$branch" https://github.com/$ORG/$repo.git
+  # Check for repo-specific fork environment variable
+  fork_var="${repo_upper}_FORK"
+  fork_org=${!fork_var:-$ORG}
+  
+  echo "📥 Cloning https://github.com/$fork_org/$repo.git (branch: $branch)"
+  git clone -b "$branch" https://github.com/$fork_org/$repo.git
 done
 
 cd ..

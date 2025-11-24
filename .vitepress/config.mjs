@@ -120,7 +120,7 @@ export default defineConfig({
   description: 'Kyma documentation',
   lastUpdated: true,
   ignoreDeadLinks: true,
-  base: '/',
+  base: process.env.NODE_ENV === 'production' ? '/kyma/' : '/',
   assetsDir: 'vite-assets',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config

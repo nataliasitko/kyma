@@ -123,13 +123,19 @@ jobs:
           DEFAULT_ORG="kyma-project"
           ORG="$DEFAULT_ORG"
           
+          echo "🔍 Repository: $REPO"
+          echo "🔍 Input forks: $INPUT_FORKS"
+          
           if [ -n "$INPUT_FORKS" ] && [ "$INPUT_FORKS" != "{}" ]; then
+            echo "📊 Parsing fork input..."
             if echo "$INPUT_FORKS" | jq -e "has(\"$REPO\")" >/dev/null 2>&1; then
               ORG=$(echo "$INPUT_FORKS" | jq -r ".[\"$REPO\"]")
               echo "✅ Using fork: $ORG/$REPO"
             else
               echo "ℹ️ No fork specified for $REPO, using default: $DEFAULT_ORG"
             fi
+          else
+            echo "ℹ️ No fork input provided, using default: $DEFAULT_ORG"
           fi
           
           echo "organization=$ORG" >> $GITHUB_OUTPUT

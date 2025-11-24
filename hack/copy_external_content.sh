@@ -35,20 +35,26 @@ for repo in "${REPOS[@]}"; do
   fork_var="${repo_upper}_FORK"
   fork_org=${!fork_var:-$ORG}
   
-  echo "📥 Cloning https://github.com/$fork_org/$repo.git (branch: $branch)"
+  echo "� Cloning https://github.com/$fork_org/$repo.git (branch: $branch)"
   git clone -b "$branch" https://github.com/$fork_org/$repo.git
 done
 
 cd ..
 echo '📂 Copying docs/user and docs/assets folders...'
 for repo in "${REPOS[@]}"; do
+  # Get the same fork organization we used for cloning
+  repo_upper=$(echo "$repo" | tr '[:lower:]' '[:upper:]' | tr '-' '_')
+  fork_var="${repo_upper}_FORK"
+  fork_org=${!fork_var:-$ORG}
+  
+  # Always copy from the local $ORG/$repo directory (where we cloned)
   SOURCE_USER="$ORG/$repo/docs/user"
   TARGET_USER="$TARGET_DIR/$repo/docs/user"
   SOURCE_ASSETS="$ORG/$repo/docs/assets"
   TARGET_ASSETS="$TARGET_DIR/$repo/docs/assets"
 
   if [ -d "$SOURCE_USER" ]; then
-    echo "📁 Copying $SOURCE_USER to $TARGET_USER"
+    echo "📁 Copying docs/user from $fork_org/$repo to $TARGET_USER"
     mkdir -p "$TARGET_USER"
     cp -r "$SOURCE_USER/" "$TARGET_USER/"
   else
@@ -56,7 +62,7 @@ for repo in "${REPOS[@]}"; do
   fi
 
   if [ -d "$SOURCE_ASSETS" ]; then
-    echo "📁 Copying $SOURCE_ASSETS to $TARGET_ASSETS"
+    echo "📁 Copying docs/assets from $fork_org/$repo to $TARGET_ASSETS"
     mkdir -p "$TARGET_ASSETS"
     cp -r "$SOURCE_ASSETS/" "$TARGET_ASSETS/"
   else

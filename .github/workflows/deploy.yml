@@ -120,34 +120,72 @@ jobs:
       - name: 🔧 Determine organization for ${{matrix.repository}}
         id: get-org
         run: |
+          set -euo pipefail
+          
           REPO="${{ matrix.repository }}"
-          INPUT_FORKS="${{ inputs.repository_forks }}"
+          INPUT_RAW="${{ inputs.repository_forks }}"
           DEFAULT_ORG="kyma-project"
           ORG="$DEFAULT_ORG"
           
-          echo "🔍 Repository: $REPO"
-          echo "🔍 Input forks: $INPUT_FORKS"
-          echo "🔍 Raw input forks (quoted): '$INPUT_FORKS'"
-          echo "🔍 Input length: ${#INPUT_FORKS}"
+          echo "� Raw input: $INPUT_RAW"
+          echo "📄 Raw input (quoted): '$INPUT_RAW'"
+          echo "📄 Input length: ${#INPUT_RAW}"
+          echo "�🔍 Repository: $REPO"
+          echo "🔍 Default organization: $DEFAULT_ORG"
           
-          if [ -n "$INPUT_FORKS" ] && [ "$INPUT_FORKS" != "{}" ]; then
-            echo "📊 Parsing fork input..."
-            echo "🔍 Testing jq validity..."
-            echo "$INPUT_FORKS" | jq . || echo "❌ Invalid JSON"
-            echo "🔍 Testing has() function..."
-            echo "$INPUT_FORKS" | jq -e "has(\"$REPO\")" && echo "✅ Found $REPO key" || echo "❌ Key $REPO not found"
-            if echo "$INPUT_FORKS" | jq -e "has(\"$REPO\")" >/dev/null 2>&1; then
-              ORG=$(echo "$INPUT_FORKS" | jq -r ".[\"$REPO\"]")
-              echo "✅ Using fork: $ORG/$REPO"
-            else
-              echo "ℹ️ No fork specified for $REPO, using default: $DEFAULT_ORG"
-            fi
+          # 1. Search in the env variables: build the variable name as repo name --> to capital --> replace " " and "-" with "_" --> append "_FORK"
+          REPO_VAR=$(echo "$REPO" | tr '[:lower:]' '[:upper:]' | tr ' -' '_')_FORK
+          echo "🔍 Computed env variable name: $REPO_VAR"
+          
+          # Variable expansion using ! is not working for env if VARIABLE is dynamic. Combine jq and toJson to get the env variable value
+          VAR_ORG=$(jq -r --arg key "$REPO_VAR" '.[$key]' <<< '${{ toJson(vars) }}')
+
+          echo "🔍 Value from env ($REPO_VAR): ${VAR_ORG:-<not set>}"
+          
+          if [ "$VAR_ORG" != "null" ]; then
+            ORG="$VAR_ORG"
+            echo "✅ Using organization '$ORG' from GitHub variable ($REPO_VAR) for $REPO"
           else
-            echo "ℹ️ No fork input provided, using default: $DEFAULT_ORG"
+            echo "ℹ️ No GitHub variable found for $REPO, checking input YAML/JSON..."
+          
+            # 2. No GitHub variable, read from input string
+            if [ -n "$INPUT_RAW" ] && [ "$INPUT_RAW" != "{}" ]; then
+              echo "� Parsing input..."
+              if echo "$INPUT_RAW" | yq -o=json '.' >/dev/null 2>&1; then
+                PARSED=$(echo "$INPUT_RAW" | yq -o=json '.')
+                echo "✅ Input read as YAML converted to JSON"
+              elif echo "$INPUT_RAW" | jq empty >/dev/null 2>&1; then
+                PARSED="$INPUT_RAW"
+                echo "✅ Valid JSON conversion"
+              else
+                echo "⚠️ Not a valid YAML nor JSON"
+                PARSED="{}"
+              fi
+          
+              echo "🔍 Parsed content: $PARSED"
+          
+              # 3. Search in the map {repo: org}
+              if echo "$PARSED" | jq -e "has(\"$REPO\")" >/dev/null 2>&1; then
+                ORG=$(echo "$PARSED" | jq -r ".[\"$REPO\"]")
+                echo "✅ Found organization '$ORG' for $REPO (map format)"
+              else
+                # 4. Search as array [{repository: repo, organization: org}]
+                ORG_FROM_ARRAY=$(echo "$PARSED" | jq -r ".[] | select(.repository == \"$REPO\") | .organization" 2>/dev/null || echo "")
+                echo "🔍 Organization from array: ${ORG_FROM_ARRAY:-<none>}"
+                if [ -n "$ORG_FROM_ARRAY" ] && [ "$ORG_FROM_ARRAY" != "null" ]; then
+                  ORG="$ORG_FROM_ARRAY"
+                  echo "✅ Found organization '$ORG' for $REPO (array format)"
+                else
+                  echo "ℹ️ Repository $REPO not found in input, using default organization '$DEFAULT_ORG'"
+                fi
+              fi
+            else
+              echo "ℹ️ No input provided, using default organization '$DEFAULT_ORG'"
+            fi
           fi
           
           echo "organization=$ORG" >> $GITHUB_OUTPUT
-          echo "🎯 Final organization: $ORG"
+          echo "🎯 Final decision: Using organization '$ORG' for repository '$REPO'"
 
       - name: '🗂️ Checkout ${{matrix.repository}} (org: ${{steps.get-org.outputs.organization}}, branch: ${{steps.get-branch.outputs.branch}})'
         uses: actions/checkout@v4

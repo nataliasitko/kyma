@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress';
 import tabsPlugin from './plugins/tabs-plugin';
 import istioSidebar from '../docs/external-content/istio/docs/user/_sidebar';
 import apiGatewaySidebar from '../docs/external-content/api-gateway/docs/user/_sidebar';
+import apiGatewaySidebarv2 from '../docs/external-content/api-gateway-v2/docs/user/_sidebar';
 import sapBtpOperatorSidebar from '../docs/external-content/btp-manager/docs/user/_sidebar';
 import applicationConnectorSidebar from '../docs/external-content/application-connector-manager/docs/user/_sidebar';
 import cloudManagerSidebar from '../docs/external-content/cloud-manager/docs/user/_sidebar';
@@ -153,6 +154,12 @@ export default defineConfig({
             link: '/external-content/api-gateway/docs/user/README.md',
             collapsed: true,
             items: makeSidebarAbsolutePath(apiGatewaySidebar, 'api-gateway'),
+          },
+          {
+            text: 'API Gateway v2',
+            link: '/external-content/api-gateway-v2/docs/user/README.md',
+            collapsed: true,
+            items: makeSidebarAbsolutePath(apiGatewaySidebarv2, 'api-gateway-v2'),
           },
           {
             text: 'SAP BTP Operator',

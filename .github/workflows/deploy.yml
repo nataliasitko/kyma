@@ -187,6 +187,7 @@ jobs:
     name: Slack Notification
     environment:
       name: notifications
+      deployment: false
     runs-on: ubuntu-latest
     if: ${{ failure() }}
     needs:

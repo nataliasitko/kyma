@@ -203,4 +203,4 @@ jobs:
           webhook-type: webhook-trigger
           payload-templated: true
           payload: |
-            link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
+            {"link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}"}

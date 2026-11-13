@@ -185,6 +185,8 @@ jobs:
 
   slack-failed-notification:
     name: Slack Notification
+    environment:
+      name: notifications
     runs-on: ubuntu-latest
     if: ${{ failure() }}
     needs:
